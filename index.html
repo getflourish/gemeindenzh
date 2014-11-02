@@ -56,7 +56,7 @@
 		      .attr("width", width)
 		      .attr("height", height);
 
-		// Normally you'd look this up. This point is in the middle of Syria
+		// center on Zurich
 		var center = [8.4916839, 47.365758];
 
 		// Instantiate the projection object
@@ -78,16 +78,7 @@
 
 			    $.each(data.features, function(i, feature) {
 
-			      	// let's lookup the incident data associated with this feature using the
-			      	// PCODE we've been storing all over the place. Note that we're using
-			      	// Underscore.js and its findWhere method. This method will find the
-			      	// first record in the incidents data that has a cityID equal to the
-			      	// current feature's PCODE property
 			      	var record = _.findWhere(incidents, { gemeinde: feature.properties.Name });
-
-			      	// with our record in hand, let's calculate the relative level of
-			      	// violence in this city by comparing the total number of incidents to
-			      	// the total number of reports of violence in Syria as a whole.
 
 			      	if (record) {
 			      		var count = parseInt(record.change);
@@ -97,16 +88,17 @@
 
 			      	console.log(count)
 
-			      	// Now that we have a concept of this city's level of violence, we can
-			      	// assign that count to a css class. This will give each path element
-			      	// a class like count-10
 			      	svg.append("path")
 			      	  .datum(feature.geometry)
 			      	  .attr("class", "border")
 			      	  .attr("d", path)
-			      	  .attr("class", "border count-" + count);
+			      	  .attr("class", "border count-" + count)
 			    });
-			});
+
+				svg.selectAll("path")
+ 					.append("svg:title")
+ 					.text(function(d) { return d.properties.name; });
+				});
 		});
 	</script>
 </body>
