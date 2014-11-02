@@ -5,9 +5,48 @@
 	<title>Document</title>
 	<script src="http://d3js.org/d3.v3.min.js"></script>
 	<script src="http://code.jquery.com/jquery-1.11.0.min.js"></script>
+	<script src="underscore.js"></script>
+	<style type="text/css">
+		.border {
+			stroke: rgba(255, 0, 0, 0.1);
+		}
+		.count-0 {
+			fill: rgba(255, 0, 0, 0);
+		}
+		.count-1 {
+			fill: rgba(255, 0, 0, 0.1);
+		}
+		.count-2 {
+			fill: rgba(255, 0, 0, 0.2);
+		}
+		.count-3 {
+			fill: rgba(255, 0, 0, 0.3);
+		}
+		.count-4 {
+			fill: rgba(255, 0, 0, 0.4);
+		}
+		.count-5 {
+			fill: rgba(255, 0, 0, 0.5);
+		}
+		.count-6 {
+			fill: rgba(255, 0, 0, 0.6);
+		}
+		.count-7 {
+			fill: rgba(255, 0, 0, 0.7);
+		}
+		.count-8 {
+			fill: rgba(255, 0, 0, 0.8);
+		}
+		.count-9 {
+			fill: rgba(255, 0, 0, 0.9);
+		}
+		.count-10 {
+			fill: rgba(255, 0, 0, 1);
+		}
+	</style>
 </head>
 <body>
-	<div id="#map"></div>
+	<div id="map"></div>
 	<script type="text/javascript">
 		// Size of the canvas on which the map will be rendered
 		var width = 1000,
@@ -18,7 +57,7 @@
 		      .attr("height", height);
 
 		// Normally you'd look this up. This point is in the middle of Syria
-		var center = [38.996815, 34.802075];
+		var center = [8.4916839, 47.365758];
 
 		// Instantiate the projection object
 		var projection = d3.geo.conicConformal()
@@ -26,20 +65,48 @@
 		    .clipAngle(180)
 		    // Size of the map itself, you may want to play around with this in
 		    // relation to your canvas size
-		    .scale(10000)
+		    .scale(100000)
 		    // Center the map in the middle of the canvas
 		    .translate([width / 2, height / 2])
 		    .precision(.1);
 
-		// Assign the projection to a path
 		var path = d3.geo.path().projection(projection);
 
 		d3.json("data/gpzuerich.geojson", function(err, data) {
-		  $.each(data.features, function(i, feature) {
-		    svg.append("path")
-		      .datum(feature.geometry)
-		      .attr("class", "border");
-		  });
+
+			d3.tsv("data/data.tsv", function(err, incidents) {
+
+			    $.each(data.features, function(i, feature) {
+
+			      	// let's lookup the incident data associated with this feature using the
+			      	// PCODE we've been storing all over the place. Note that we're using
+			      	// Underscore.js and its findWhere method. This method will find the
+			      	// first record in the incidents data that has a cityID equal to the
+			      	// current feature's PCODE property
+			      	var record = _.findWhere(incidents, { gemeinde: feature.properties.Name });
+
+			      	// with our record in hand, let's calculate the relative level of
+			      	// violence in this city by comparing the total number of incidents to
+			      	// the total number of reports of violence in Syria as a whole.
+
+			      	if (record) {
+			      		var count = parseInt(record.change);
+			      	} else {
+			      		count = 0;
+			      	}
+
+			      	console.log(count)
+
+			      	// Now that we have a concept of this city's level of violence, we can
+			      	// assign that count to a css class. This will give each path element
+			      	// a class like count-10
+			      	svg.append("path")
+			      	  .datum(feature.geometry)
+			      	  .attr("class", "border")
+			      	  .attr("d", path)
+			      	  .attr("class", "border count-" + count);
+			    });
+			});
 		});
 	</script>
 </body>
